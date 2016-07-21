@@ -125,6 +125,7 @@ def main():
 		client.load_cookies(cookies_file)
 		if not client.get_account_info():
 			print('cookies失效,执行重新登陆')
+			raise
 	except Exception as e:
 		password = input('请输入您的密码:')
 		if client.login(username, password, chapter_file):
