@@ -8,6 +8,16 @@
 #
 # 需要安装bs4库：sudo pip3 install bs4
 #
+# windows下需要安装以下模块：
+# ----------------------------------
+# 安装http请求库
+#    pip install requests
+# 安装rsa加密模块，不知道为什么要先安装第一个
+#	pip install pycrypto
+#	pip install rsa
+# 安装Beautiful Soup 4包，爬虫包
+#   pip install bs4
+#
 # Created by Vincent on 16-7-21.
 #
 ############################################################
