@@ -23,15 +23,21 @@ import json
 import rsa
 import binascii
 from bs4 import BeautifulSoup
+import urllib
 
 headers = {
 	'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36',
-	'Content-Type': 'application/x-www-form-urlencoded',
+	'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+	'Accept': 'application/json, text/javascript, */*; q=0.01',
+	'Accept-Language': 'en-US,en;q=0.5',
+	'X-Requested-With': 'XMLHttpRequest',
+	'Referer': 'http://www.bilibili.com',
 }
 
 class Client():
 	def __init__(self):
 		self.session = requests.Session()
+		self.session.headers = headers
 		self.userdata = ''
 
 	#密码执行加密
@@ -112,6 +118,19 @@ class Client():
 		response = self.session.get('http://message.bilibili.com/api/notify/query.notify.count.do?captcha=' + captcha)
 		print(response.text)
 
+	#抢沙发
+	def do_reply(self, avid, content):
+		preload = {
+			"jsonp":"jsonp",
+			"message":content,
+			"type":1, 
+			"plat":1,
+			"oid":avid
+		}
+		preload = urllib.parse.urlencode(preload) 
+		response = self.session.post("http://api.bilibili.com/x/reply/add", data=preload)
+		print(response.text)
+
 def main():
 	client = Client()
 	username = input('请输入您的账号:')
@@ -135,6 +154,7 @@ def main():
 			sys.exit()
 	print('欢迎您:', client.userdata['uname'])
 	client.get_notify_count()
+	# client.do_reply(5601151, "期待下一集~")
 
 if __name__ == '__main__':
 	main()
