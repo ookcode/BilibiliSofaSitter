@@ -6,17 +6,11 @@
 #
 # 需要在python3环境下运行
 #
-# 需要安装bs4库：sudo pip3 install bs4
-#
-# windows下需要安装以下模块：
-# ----------------------------------
-# 安装http请求库
-#    pip install requests
-# 安装rsa加密模块，不知道为什么要先安装第一个
-#	pip install pycrypto
-#	pip install rsa
-# 安装Beautiful Soup 4包，爬虫包
-#   pip install bs4
+# 需要安装的库:
+# sudo pip3 install bs4
+# sudo pip3 install requests
+# sudo pip3 install pycrypto
+# sudo pip3 install rsa
 #
 # Created by Vincent on 16-7-21.
 #
@@ -34,14 +28,11 @@ import rsa
 import binascii
 from bs4 import BeautifulSoup
 import urllib
+import time
 
 headers = {
 	'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36',
 	'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-	'Accept': 'application/json, text/javascript, */*; q=0.01',
-	'Accept-Language': 'en-US,en;q=0.5',
-	'X-Requested-With': 'XMLHttpRequest',
-	'Referer': 'http://www.bilibili.com',
 }
 
 class Client():
@@ -126,10 +117,10 @@ class Client():
 		response = self.session.get('http://www.bilibili.com/plus/widget/ajaxGetCaptchaKey.php?js')
 		captcha = response.text.split('\"')[1]
 		response = self.session.get('http://message.bilibili.com/api/notify/query.notify.count.do?captcha=' + captcha)
-		print(response.text)
 
 	#抢沙发
 	def do_reply(self, avid, content):
+		print("开始抢沙发：", content)
 		preload = {
 			"jsonp":"jsonp",
 			"message":content,
@@ -140,6 +131,16 @@ class Client():
 		preload = urllib.parse.urlencode(preload) 
 		response = self.session.post("http://api.bilibili.com/x/reply/add", data=preload)
 		print(response.text)
+
+	#获取番剧详情
+	def get_bangumi_detail(self, bangumi_id):
+		response = self.session.post("http://bangumi.bilibili.com/jsonp/seasoninfo/{}.ver".format(bangumi_id))
+		data = json.loads(response.content.decode('utf-8'))
+		try:
+			if data['code'] == 0:
+				return data['result']
+		except Exception as e:
+			print('error', e)
 
 def main():
 	client = Client()
@@ -163,8 +164,32 @@ def main():
 		else:
 			sys.exit()
 	print('欢迎您:', client.userdata['uname'])
-	client.get_notify_count()
-	# client.do_reply(5601151, "期待下一集~")
+	# client.get_notify_count()
+	##############################################
+	# 
+	# 监听番剧更新示例
+	# 
+	############################################## 
+	handle_id = 5070	#监听番剧ID
+	start_episodes = None	#初始数据
+	start_count = 0		#初始番剧集数
+	index = 0
+	while True:
+		data = client.get_bangumi_detail(handle_id)
+		episodes = data['episodes']
+		count = len(episodes)
+		if index == 0:
+			start_episodes = episodes
+			start_count = count
+			print("开始监听番剧：",data['title'])
+		print(index, "上次更新 {}".format(episodes[0]['update_time']))
+		if start_count < count:
+			av_id = int(episodes[0]['av_id'])
+			print("发现更新{}，监听结束".format(av_id))
+			client.do_reply(av_id, "我是千万手速王 - ( ゜- ゜)つロ")
+			break
+		index = index + 1
+		time.sleep(1)
 
 if __name__ == '__main__':
 	main()
