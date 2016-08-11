@@ -2,24 +2,10 @@
 #coding=utf-8
 ############################################################
 #
-# 哔哩哔哩 - ( ゜- ゜)つロ 乾杯~ - bilibili
-#
-# 需要在python3环境下运行
-#
-# 需要安装的库:
-# sudo pip3 install bs4
-# sudo pip3 install requests
-# sudo pip3 install pycrypto
-# sudo pip3 install rsa
-#
-# Created by Vincent on 16-7-21.
+#	bilibli api
 #
 ############################################################
 import os,sys
-if not sys.version_info[0] == 3:
-	print("当前脚本只能在python3.x下运行，请更换您的python版本！")
-	sys.exit()
-
 import requests
 import requests.utils
 import pickle
@@ -28,7 +14,6 @@ import rsa
 import binascii
 from bs4 import BeautifulSoup
 import urllib
-import time
 
 headers = {
 	'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36',
@@ -57,9 +42,7 @@ class Client():
 
 	def save_cookies(self, path):
 		with open(path, 'wb') as f:
-			#cookiejar转为dict
 			cookies_dic = requests.utils.dict_from_cookiejar(self.session.cookies)
-			#写入文件
 			pickle.dump(cookies_dic, f)
 
 	def login(self, username, password, captcha_path):
@@ -93,11 +76,36 @@ class Client():
 			center = soup.find('center').find('div')
 			info = list(center.strings)[0]
 			info = info.strip()
-			print(info)
+			print("登陆失败", info)
 			return False
 		except Exception as e:
 			#登陆成功
 			return True
+			
+	#使用cookies登陆
+	def cookies_login(self):
+		root_path = os.path.dirname(os.path.realpath(sys.argv[0]))
+		#读取配置文件中的username
+		config_path = os.path.join(root_path, 'username.config')
+		try:
+			f = open(config_path, 'r')
+			config = json.load(f)
+			username = config['username']
+		except Exception as e:
+			print("username.config文件不存在或内容错误，请重新执行一次login.py")
+			sys.exit()
+		finally:
+			f.close()
+		#读取cookies文件
+		cookies_file = os.path.join(root_path, username + ".cookies")
+		if not os.path.exists(cookies_file):
+			print(username + '.cookies不存在，请重新执行一次login.py')
+			sys.exit()
+		self.load_cookies(cookies_file)
+		if not self.get_account_info():
+			print(username + '.cookies失效，请重新执行一次login.py')
+			sys.exit()
+		print('欢迎您:', self.userdata['uname'])
 
 	#获取个人信息
 	def get_account_info(self):
@@ -108,7 +116,7 @@ class Client():
 				self.userdata = data['data']
 				return True
 		except Exception as e:
-			pass
+			print(e)
 		return False
 
 	#获取个人通知消息个数
@@ -141,55 +149,3 @@ class Client():
 				return data['result']
 		except Exception as e:
 			print('error', e)
-
-def main():
-	client = Client()
-	username = input('请输入您的账号:')
-	root_path = os.path.dirname(os.path.realpath(sys.argv[0]))
-	cookies_file = os.path.join(root_path, username + ".cookies")
-	chapter_file = os.path.join(root_path, "captcha.png")
-	try:
-		if not os.path.exists(cookies_file):
-			print('未找到cookies,执行登陆操作')
-			raise
-		client.load_cookies(cookies_file)
-		if not client.get_account_info():
-			print('cookies失效,执行重新登陆')
-			raise
-	except Exception as e:
-		password = input('请输入您的密码:')
-		if client.login(username, password, chapter_file):
-			client.save_cookies(cookies_file)
-			client.get_account_info()
-		else:
-			sys.exit()
-	print('欢迎您:', client.userdata['uname'])
-	# client.get_notify_count()
-	##############################################
-	# 
-	# 监听番剧更新示例
-	# 
-	############################################## 
-	handle_id = 5070	#监听番剧ID
-	start_episodes = None	#初始数据
-	start_count = 0		#初始番剧集数
-	index = 0
-	while True:
-		data = client.get_bangumi_detail(handle_id)
-		episodes = data['episodes']
-		count = len(episodes)
-		if index == 0:
-			start_episodes = episodes
-			start_count = count
-			print("开始监听番剧：",data['title'])
-		print(index, "上次更新 {}".format(episodes[0]['update_time']))
-		if start_count < count:
-			av_id = int(episodes[0]['av_id'])
-			print("发现更新{}，监听结束".format(av_id))
-			client.do_reply(av_id, "我是千万手速王 - ( ゜- ゜)つロ")
-			break
-		index = index + 1
-		time.sleep(1)
-
-if __name__ == '__main__':
-	main()
