@@ -6,12 +6,14 @@
 ##安装说明
 * 需要在python3环境下运行
 * 需要安装以下库
+
 ```shell
-  	sudo pip3 install bs4
-  	sudo pip3 install requests
-  	sudo pip3 install pycrypto
-  	sudo pip3 install rsa
+sudo pip3 install bs4
+sudo pip3 install requests
+sudo pip3 install pycrypto
+sudo pip3 install rsa
 ```
+
 ##使用说明
 ####api.py
 * 该脚本封装了一些bilibli常用api
