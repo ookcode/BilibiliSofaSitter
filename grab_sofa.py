@@ -128,10 +128,10 @@ def main():
 					print(now, '尚未更新')				
 				#集中快速刷新
 				if refresh_times < focus_times:
-					time.sleep(0.49)
+					time.sleep(0.4)
 				else:
-					time.sleep(0.99)
+					time.sleep(0.9)
 				refresh_times = refresh_times + 1
-		time.sleep(0.01)
+		time.sleep(0.1)
 if __name__ == '__main__':
 	main()
