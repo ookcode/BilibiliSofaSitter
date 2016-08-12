@@ -106,7 +106,7 @@ def main():
 	max_times = 60 * 10		#最大刷新次数（10分钟）
 	while True:
 		now = datetime.now()
-		if now.weekday() + 1 in weekday_list:
+		if now.weekday() in weekday_list:
 			if not today_updated and now.hour >= hour and now.minute >= minute and now.second >= second:
 				#开始刷新
 				if refresh_times >= max_times:
