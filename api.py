@@ -106,6 +106,7 @@ class Client():
 			print(username + '.cookies失效，请重新执行一次login.py')
 			sys.exit()
 		print('欢迎您:', self.userdata['uname'])
+		return self.userdata['uname']
 
 	#获取个人信息
 	def get_account_info(self):
