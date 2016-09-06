@@ -93,9 +93,9 @@ class Control():
 						if new_data['lastdate'] == data['nextdate']:
 							print(data['title'], "发现更新")
 							print(new_data)
-							# 抢沙发, 暂时注释
-							# reply = "我是千万手速王 - ( ゜- ゜)つロ"
-							# self.model.request_reply(new_data['last_id'], reply)
+							# 抢沙发
+							reply = "稳坐二楼的千万手速王(｀_´)ゞ"
+							self.model.request_reply(new_data['last_id'], reply)
 						self.model.add_data(av_id, new_data)
 
 				######################
