@@ -18,8 +18,10 @@ def main():
 	username = input('请输入您的账号:')
 	password = input('请输入您的密码:')
 	cookies_file = os.path.join(root_path, username + ".cookies")
-	chapter_file = os.path.join(root_path, "captcha.png")
-	if client.login(username, password, chapter_file):
+	# chapter_file = os.path.join(root_path, "captcha.png")
+	# if client.login(username, password, chapter_file):
+	# 直播接口无需验证码，弃用原有网页登陆接口
+	if client.live_login(username, password):
 		#存储cookies
 		client.save_cookies(cookies_file)
 		#存储username

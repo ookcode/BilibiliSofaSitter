@@ -30,6 +30,7 @@ sudo pip3 install rsa
 ## 计划实现功能（一期）
 * 自动监听番剧更新(完成)
 * 自动抢沙发(完成)
-* 登录验证码的识别(放弃，求大神实现后PR)
+* ~~登录验证码的识别(放弃，求大神实现后PR)~~
+* 通过直播登陆接口绕过了验证码
 
 本项目同时托管在[Github.com](https://github.com/ookcode/BilibiliSofaSitter)与[Coding.net](https://coding.net/u/ookcode/p/bilibili/git)中

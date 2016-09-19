@@ -27,7 +27,10 @@ class Client():
 		self.userdata = ''
 
 	#密码执行加密
-	def _encrypt(self, password, token):
+	def _encrypt(self, password):
+		#获取加密的token
+		response = self.session.get('http://passport.bilibili.com/login?act=getkey')
+		token = json.loads(response.content.decode('utf-8'))
 		password = str(token['hash'] + password).encode('utf-8')
 		pub_key = token['key']
 		pub_key = rsa.PublicKey.load_pkcs1_openssl_pem(pub_key)
@@ -45,6 +48,26 @@ class Client():
 			cookies_dic = requests.utils.dict_from_cookiejar(self.session.cookies)
 			pickle.dump(cookies_dic, f)
 
+	#利用直播接口登陆，无需验证码
+	def live_login(self, username, password):
+		#密码加密
+		password = self._encrypt(password)
+		preload = {
+			'userid': username,
+			'pwd': password,
+			'captcha':"",
+			'keep':1
+		}
+		response = self.session.post('https://passport.bilibili.com/ajax/miniLogin/login', data=preload)
+		data = json.loads(response.content.decode('utf-8'))
+		try:
+			return data['status']	
+		except Exception as e:
+			#登陆失败
+			print('live login error', e)
+			return False
+
+	#普通网页接口登陆，需要验证码
 	def login(self, username, password, captcha_path):
 		#访问登陆页面
 		response = self.session.get('https://passport.bilibili.com/login')
@@ -54,11 +77,8 @@ class Client():
 		f = open(captcha_path,'wb')
 		f.write(response.content)
 		f.close()
-		#获取加密的token
-		response = self.session.get('http://passport.bilibili.com/login?act=getkey')
-		token = json.loads(response.content.decode('utf-8'))
 		#密码加密
-		password = self._encrypt(password, token)
+		password = self._encrypt(password)
 		captcha_code = input("请输入图片上的验证码：")
 		#请求登陆
 		preload = {
