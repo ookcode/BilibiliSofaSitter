@@ -24,6 +24,3 @@ sudo pip3 install requests
 
 ## 计划实现功能
 b站更新频繁，最近没啥时间，暂停维护了。
-
-
-本项目同时托管在[Github.com](https://github.com/ookcode/BilibiliSofaSitter)与[Coding.net](https://coding.net/u/ookcode/p/bilibili/git)中
