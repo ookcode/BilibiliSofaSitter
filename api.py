@@ -10,8 +10,6 @@ import requests
 import requests.utils
 import pickle
 import json
-import rsa
-import binascii
 from bs4 import BeautifulSoup
 import urllib
 
@@ -26,17 +24,11 @@ class Client():
 		self.session.headers = headers
 		self.userdata = ''
 
-	#密码执行加密
-	def _encrypt(self, password):
-		#获取加密的token
-		response = self.session.get('http://passport.bilibili.com/login?act=getkey')
-		token = json.loads(response.content.decode('utf-8'))
-		password = str(token['hash'] + password).encode('utf-8')
-		pub_key = token['key']
-		pub_key = rsa.PublicKey.load_pkcs1_openssl_pem(pub_key)
-		message = rsa.encrypt(password, pub_key)
-		message = binascii.b2a_base64(message)
-		return message
+	def load_cookies_str(self, path):
+		with open(path, 'rb') as f:
+			cookies = f.read()
+			self.session.headers['cookie'] = cookies
+			self.userdata = {}
 
 	def load_cookies(self, path):
 		with open(path, 'rb') as f:
@@ -48,82 +40,23 @@ class Client():
 			cookies_dic = requests.utils.dict_from_cookiejar(self.session.cookies)
 			pickle.dump(cookies_dic, f)
 
-	#利用直播接口登陆，无需验证码
-	def live_login(self, username, password):
-		#密码加密
-		password = self._encrypt(password)
-		preload = {
-			'userid': username,
-			'pwd': password,
-			'captcha':"",
-			'keep':1
-		}
-		response = self.session.post('https://passport.bilibili.com/ajax/miniLogin/login', data=preload)
-		data = json.loads(response.content.decode('utf-8'))
-		try:
-			return data['status']	
-		except Exception as e:
-			#登陆失败
-			print('live login error', e)
-			return False
-
-	#普通网页接口登陆，需要验证码
-	def login(self, username, password, captcha_path):
-		#访问登陆页面
-		response = self.session.get('https://passport.bilibili.com/login')
-		#请求验证码图片
-		response = self.session.get('https://passport.bilibili.com/captcha')
-		#保存验证码
-		f = open(captcha_path,'wb')
-		f.write(response.content)
-		f.close()
-		#密码加密
-		password = self._encrypt(password)
-		captcha_code = input("请输入图片上的验证码：")
-		#请求登陆
-		preload = {
-			'act': 'login',
-			'gourl': '',
-			'keeptime': '2592000',
-			'userid': username,
-			'pwd': password,
-			'vdcode':captcha_code
-		}
-		response = self.session.post('https://passport.bilibili.com/login/dologin', data=preload)
-		try:
-			#解析返回的html，判断登陆成功与否
-			soup = BeautifulSoup(response.text, "html.parser")
-			center = soup.find('center').find('div')
-			info = list(center.strings)[0]
-			info = info.strip()
-			print("登陆失败", info)
-			return False
-		except Exception as e:
-			#登陆成功
-			return True
 			
 	#使用cookies登陆
 	def cookies_login(self):
 		root_path = os.path.dirname(os.path.realpath(sys.argv[0]))
-		#读取配置文件中的username
-		config_path = os.path.join(root_path, 'username.config')
-		try:
-			f = open(config_path, 'r')
-			config = json.load(f)
-			username = config['username']
-		except Exception as e:
-			print("username.config文件不存在或内容错误，请重新执行一次login.py")
-			sys.exit()
-		finally:
-			f.close()
-		#读取cookies文件
-		cookies_file = os.path.join(root_path, username + ".cookies")
+		cookies_file = None
+		# 当前目录查找后缀.cookies的文件
+		for f in os.listdir(root_path):
+			if os.path.splitext(f)[1] == ".cookies":
+				cookies_file = os.path.join(root_path, f)
+				break
 		if not os.path.exists(cookies_file):
-			print(username + '.cookies不存在，请重新执行一次login.py')
+			print("在当前目录下未找到.cookies文件.")
 			sys.exit()
-		self.load_cookies(cookies_file)
+		# 读取cookies文件
+		self.load_cookies_str(cookies_file)
 		if not self.get_account_info():
-			print(username + '.cookies失效，请重新执行一次login.py')
+			print(username + '.cookies失效，，请重新获取')
 			sys.exit()
 		print('欢迎您:', self.userdata['uname'])
 		return self.userdata['uname']
@@ -163,8 +96,13 @@ class Client():
 
 	#获取番剧详情
 	def get_bangumi_detail(self, bangumi_id):
-		response = self.session.post("http://bangumi.bilibili.com/jsonp/seasoninfo/{}.ver".format(bangumi_id))
-		data = json.loads(response.content.decode('utf-8'))
+		response = self.session.get("https://bangumi.bilibili.com/jsonp/seasoninfo/{}.ver".format(bangumi_id))
+		content = response.content.decode('utf-8')
+		begin = "seasonListCallback("
+		end = ");"
+		content = content[len(begin): - len(end)]
+		print(content)
+		data = json.loads(content)
 		try:
 			if data['code'] == 0:
 				return data['result']

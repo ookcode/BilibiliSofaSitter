@@ -6,8 +6,8 @@ from datetime import datetime
 import time
 import math
 import threading
-import grab_sofa_model
-import grab_sofa_view
+import mvc.grab_sofa_model as grab_sofa_model
+import mvc.grab_sofa_view as grab_sofa_view
 
 ###################################
 #

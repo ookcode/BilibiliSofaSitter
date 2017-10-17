@@ -10,27 +10,20 @@
 ```shell
 sudo pip3 install bs4
 sudo pip3 install requests
-sudo pip3 install pycrypto
-sudo pip3 install rsa
 ```
 
 ## 使用说明
-* 首次运行请执行一次login.py，该脚本会进行登录操作并保存cookies和登录状态
-* 之后运行grab_sofa.py，带GUI的监听番剧更新并抢沙发脚本
+直播免验证码登录接口失效了，传统登录接口也换了验证方式，暂时无法破解，只能使用cookies登录。  
+* 安装[一键下载cookies的chrome插件](https://github.com/ookcode/CookiesDownloader)
+* 使用chrome手动登录bilibili，然后点击插件下载cookies
+* 将cookies放入本目录下
+* 运行main.py监听番剧更新
 
-## grab_sofa.py解析
-* 原理也就是在番剧的预计更新时间时开始刷新，直到刷到有更新或者超过最大次数判定为停更~
-* 尝试使用了MVC模式来写，代码感觉稍微清晰一些，如果有任何槽点，请轻喷( ゜- ゜)
+## 其他说明
+如果您只是想参考部分bilibili的Api，请直接阅读api.py文件
 
-## 计划实现功能（二期）
-* 自动点赞他人评论的功能
-* 自动回复他人评论的功能
-* bilibili注册答题器
+## 计划实现功能
+b站更新频繁，最近没啥时间，暂停维护了。
 
-## 计划实现功能（一期）
-* 自动监听番剧更新(完成)
-* 自动抢沙发(完成)
-* ~~登录验证码的识别(放弃，求大神实现后PR)~~
-* 通过直播登陆接口绕过了验证码
 
 本项目同时托管在[Github.com](https://github.com/ookcode/BilibiliSofaSitter)与[Coding.net](https://coding.net/u/ookcode/p/bilibili/git)中

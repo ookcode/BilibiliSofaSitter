@@ -9,7 +9,7 @@ import os,sys
 if not sys.version_info[0] == 3:
 	print("当前脚本只能在python3.x下运行，请更换您的python版本！")
 	sys.exit()
-import grab_sofa_control
+import mvc.grab_sofa_control as grab_sofa_control
 
 def main():
 	control = grab_sofa_control.Control()
